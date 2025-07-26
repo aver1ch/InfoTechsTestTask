@@ -1,0 +1,1 @@
+/Library/Developer/CommandLineTools/usr/bin/c++  -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk -dynamiclib -Wl,-headerpad_max_install_names -o liblogger.dylib -install_name @rpath/liblogger.dylib CMakeFiles/logger.dir/fileLogger.cpp.o CMakeFiles/logger.dir/importance.cpp.o CMakeFiles/logger.dir/socketLogger.cpp.o 

@@ -1,0 +1,4 @@
+/Users/averichie/Desktop/InfoTechsTestTask/build/static/CMakeFiles/logger.dir
+/Users/averichie/Desktop/InfoTechsTestTask/build/static/CMakeFiles/test_app.dir
+/Users/averichie/Desktop/InfoTechsTestTask/build/static/CMakeFiles/edit_cache.dir
+/Users/averichie/Desktop/InfoTechsTestTask/build/static/CMakeFiles/rebuild_cache.dir

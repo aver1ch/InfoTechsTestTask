@@ -1,35 +1,27 @@
 cmake_minimum_required(VERSION 3.10)
-project(LoggerLib)
+project(InfoTechsLoggerProject)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Источник библиотеки
-set(SOURCES
-    fileLogger.cpp
-    importance.cpp
-)
-
-# Заголовки (для установки)
-set(HEADERS
-    fileLogger.hpp
-    importance.hpp
-)
-
-# Опция выбора между статической и динамической библиотекой
+# Логгер как библиотека (статическая/динамическая)
 option(BUILD_SHARED_LIBS "Build shared libraries" ON)
 
-# Создание библиотеки (автоматически будет .so/.dylib или .a)
-add_library(logger ${SOURCES})
+# Источники библиотеки
+set(LOGGER_SOURCES
+    fileLogger.cpp
+    importance.cpp
+    socketLogger.cpp
+)
 
-# Путь установки заголовков
+add_library(logger ${LOGGER_SOURCES})
+
+# Указание include-директории (для public headers)
 target_include_directories(logger PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
-# Установка библиотеки и заголовков
-install(TARGETS logger
-        ARCHIVE DESTINATION lib
-        LIBRARY DESTINATION lib
-        RUNTIME DESTINATION bin)
+# Приложение
+add_executable(test_app main.cpp)
 
-install(FILES ${HEADERS} DESTINATION include)
+# Ссылка на библиотеку
+target_link_libraries(test_app PRIVATE logger)
 

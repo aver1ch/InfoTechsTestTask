@@ -1,19 +1,17 @@
 #include "socketLogger.hpp"
-
 #include "importance.hpp"
-#include <string>
+
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <cstring>
 #include <iostream>
 
-SocketLogger::SocketLogger(const std::string& ip, int port, ImportanceLevel importance) : Logger(importance), ip(ip), port(port) {}
+SocketLogger::SocketLogger(const std::string& ip, int port, ImportanceLevel importance)
+    : Logger(importance), ip(ip), port(port) {}
 
 void SocketLogger::log(const std::string& message, ImportanceLevel importanceOfMessage) const {
-    if (importanceOfMessage < importance) {
-        return;
-    }
+    if (importanceOfMessage < importance) return;
 
     int sock = socket(AF_INET, SOCK_STREAM, 0);
     if (sock < 0) {
@@ -38,10 +36,13 @@ void SocketLogger::log(const std::string& message, ImportanceLevel importanceOfM
         return;
     }
 
-    std::string payload = message + " | " + ImportanceLeveltoString(importanceOfMessage) + " | " + getCurrentDateTime() + " | " + "\n";
+    std::string payload = message + " | " + ImportanceLeveltoString(importanceOfMessage)
+                        + " | " + getCurrentDateTime() + " | " + "\n";
+
     if (send(sock, payload.c_str(), payload.length(), 0) < 0) {
         std::cerr << "Failed to send log message\n";
     }
 
     close(sock);
 }
+
