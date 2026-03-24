@@ -1,106 +1,81 @@
 Многопоточный логгер на C++
 
-Описание
+Зачем этот проект
 
-Проект реализует **абстрактный логгер** с двумя реализациями:
+Это учебный пример архитектуры логирования:
+- есть абстракция `Logger`, которую можно менять без переписывания приложения
+- есть уровни важности, чтобы фильтровать шум
+- запись выполняется в отдельных потоках и защищена мьютексом
 
-- `FileLogger` — логгирование в файл
-- `SocketLogger` — отправка логов по TCP
+Сейчас консольное приложение использует `FileLogger`. Реализация `SocketLogger` есть в библиотеке и может быть подключена в `main.cpp` при необходимости.
 
-Программа принимает ввод с консоли и асинхронно записывает сообщения, если их важность соответствует установленному порогу.
+Что делает приложение
+
+1. Запускается с именем файла и порогом важности.
+2. Читает строки из stdin в формате `<LEVEL> <message>`.
+3. Пишет только те сообщения, чей уровень не ниже заданного.
 
 Структура проекта
 
 .
-├── include/
-│ ├── logger.hpp
-│ ├── fileLogger.hpp
-│ ├── socketLogger.hpp
-│ └── importance.hpp
-├── src/
-│ ├── fileLogger.cpp
-│ ├── socketLogger.cpp
-│ ├── importance.cpp
-│ └── main.cpp
 ├── CMakeLists.txt
-└── README.md
-
+├── README.md
+├── logger.hpp
+├── fileLogger.hpp / fileLogger.cpp
+├── socketLogger.hpp / socketLogger.cpp
+├── importance.hpp / importance.cpp
+└── main.cpp
 
 Сборка
 
-Динамическая:
+Общий вариант (shared libs по умолчанию):
 
-cmake -S .. -B static -DBUILD_SHARED_LIBS=OFF
-cmake --build static
+cmake -S . -B build
+cmake --build build
 
-Исполняемый файл будет находиться в static/test_app.
+Статическая библиотека:
 
-Статическая:
+cmake -S . -B build-static -DBUILD_SHARED_LIBS=OFF
+cmake --build build-static
 
-cmake -S .. -B shared -DBUILD_SHARED_LIBS=OFF
-cmake --build shared
+Исполняемый файл: `build/test_app` или `build-static/test_app`.
 
 Использование
 
 ./test_app <file_name> <importance_level>
-Пример:
+
+Пример запуска:
 
 ./test_app log.txt SECOND
-Ввод из терминала:
+
+Пример ввода:
 
 FIRST System started
 SECOND Subsystem initialized
 THIRD Minor details
-Вывод в log.txt (пример):
+
+Пример содержимого log.txt:
 
 System started | FIRST | 2025-07-23 17:44:21 |
 Subsystem initialized | SECOND | 2025-07-23 17:44:23 |
 
-Компоненты
+Компоненты (кратко)
 
-logger.hpp
-Абстрактный базовый класс логгера.
+`logger.hpp` — абстрактный базовый класс логгера.  
+`fileLogger.*` — запись в файл.  
+`socketLogger.*` — отправка по TCP (в приложении не используется).  
+`importance.*` — перечисление уровней и преобразование из/в строку.  
+`main.cpp` — консольный ввод, порог важности, потокобезопасная запись.
 
-virtual void log(...) — логирование сообщения
-getCurrentDateTime() — текущая дата/время
-setImportanceLevel(...), getImportanceLevel()
-  fileLogger.hpp / fileLogger.cpp
-Логгирование в файл.
+Уровни важности
 
-Хранит имя файла
-Записывает сообщения с уровнем не ниже установленного
-  socketLogger.hpp / socketLogger.cpp
-Логгирование по сети (TCP).
+FIRST — критические события  
+SECOND — важные события  
+THIRD — информационные события  
+UNKOWN — нераспознанный ввод
 
-Подключается к IP/порт
-Отправляет форматированные строки
-  importance.hpp / importance.cpp
-Уровни важности сообщений:
+Возможные ошибки
 
-FIRST, SECOND, THIRD
-UNKOWN — если нераспознанный ввод
-Преобразование из строки и обратно
- main.cpp
-Основной файл:
-
-Принимает аргументы fileName и importance
-Читает ввод пользователя
-Создаёт поток на каждое сообщение
-Потокобезопасно вызывает logger.log(...)
-  Примеры уровней важности
-
-Уровень	Описание
-FIRST	Критически важные события
-SECOND	Важные события
-THIRD	Информационные сообщения
-  Потокобезопасность
-
-Запись в лог происходит с использованием std::mutex, чтобы избежать гонки данных при многопоточном выводе.
-
-std::lock_guard<std::mutex> lock(logMutex);
-logger.log(...);
-  Возможные ошибки
-
-Failed to open log file — файл не открыт (нет доступа/не существует)
-Unrecognized importance level — введён неизвестный уровень важности
-Connection failed — при использовании SocketLogger
+Failed to open log file — не удалось открыть файл (права/путь).  
+Unrecognized importance level — неизвестный уровень важности.  
+Connection failed — при использовании SocketLogger.
